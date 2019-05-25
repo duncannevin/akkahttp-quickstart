@@ -1,8 +1,13 @@
+package router
+
 import java.util.UUID
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import entities.{ApiError, ErrorData, Todo, UpdateTodo}
 import org.scalatest.{Matchers, WordSpec}
+import repository.{InMemoryTodoRepository, TodoMocks}
+import routes.TodoRouter
 
 class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
 
@@ -42,8 +47,8 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
       Put(s"/todos/1", testUpdateTodo) ~> router.route ~> check {
         status shouldBe ApiError.todoNotFound("1").statusCode
-        val resp = responseAs[String]
-        resp shouldBe ApiError.todoNotFound("1").message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.todoNotFound("1").data
       }
     }
     "not update a todo with invalid data" in {
@@ -52,8 +57,8 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
       Put(s"/todos/$todoId", testUpdateTodo.copy(title = Some(""))) ~> router.route ~> check {
         status shouldBe ApiError.emptyTitleField.statusCode
-        val resp = responseAs[String]
-        resp shouldBe ApiError.emptyTitleField.message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.emptyTitleField.data
       }
     }
     "handle repository failures when updating todos" in {
@@ -62,8 +67,8 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
       Put(s"/todos/$todoId", testUpdateTodo) ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode
-        val resp = responseAs[String]
-        resp shouldBe ApiError.generic.message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.generic.data
       }
     }
   }

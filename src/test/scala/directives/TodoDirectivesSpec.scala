@@ -1,6 +1,9 @@
-import akka.http.scaladsl.model.StatusCodes
+package directives
+
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import entities.{ApiError, ApiSuccess, ErrorData}
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Future
@@ -10,33 +13,37 @@ class TodoDirectivesSpec extends WordSpec with Matchers with ScalatestRouteTest 
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
+  private def mockFailed = {
+    Future { Thread.sleep(10); throw new Exception("blah"); 1 }
+  }
+
   private val testRoute = pathPrefix("test") {
     path("success") {
       get {
-        handleWithGeneric(Future.unit) { _ =>
-          complete(StatusCodes.OK)
+        handleWithGeneric(Future.unit) (ApiSuccess.ok) { success =>
+          complete(success.statusCode, success.data)
         }
       }
     } ~ path("failure") {
       get {
-        handleWithGeneric(Future.failed(new Exception("failure"))) { _ =>
-          complete(StatusCodes.OK)
+        handleWithGeneric(mockFailed) (ApiSuccess.ok) { success =>
+          complete(success.statusCode, success.data)
         }
       }
     }
   }
 
-  "TodoDirectives" should {
+  "directives.TodoDirectives" should {
     "not return an error if the future succeeds" in {
       Get("/test/success") ~> testRoute ~> check {
         status shouldBe StatusCodes.OK
       }
     }
-    "return an error ig the future fails" in {
+    "return an error if the future fails" in {
       Get("/test/failure") ~> testRoute ~> check {
         status shouldBe StatusCodes.InternalServerError
-        val resp = responseAs[String]
-        resp shouldBe ApiError.generic.message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.generic.data
       }
     }
   }

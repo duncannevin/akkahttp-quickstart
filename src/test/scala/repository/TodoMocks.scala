@@ -1,6 +1,11 @@
+package repository
+
+import entities.{CreateTodo, Todo, UpdateTodo}
+
 import scala.concurrent.Future
+
 trait TodoMocks {
-  class FailingRepository extends TodoRepository {
+  class FailingRepository extends Repository {
     override def all(): Future[Seq[Todo]] = Future.failed(new Exception("Mocked exception"))
 
     override def done(): Future[Seq[Todo]] = Future.failed(new Exception("Mocked exception"))

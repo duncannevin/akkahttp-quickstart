@@ -1,6 +1,11 @@
+package router
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import entities.{ApiError, CreateTodo, ErrorData, Todo}
 import org.scalatest.{Matchers, WordSpec}
+import repository.{InMemoryTodoRepository, TodoMocks}
+import routes.TodoRouter
 
 class TodoRouterSaveSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
 
@@ -18,7 +23,7 @@ class TodoRouterSaveSpec extends WordSpec with Matchers with ScalatestRouteTest 
       val router = new TodoRouter(repository)
 
       Post("/todos", testSaveTodo) ~> router.route ~> check {
-        status shouldBe StatusCodes.OK
+        status shouldBe StatusCodes.Created
         val resp = responseAs[Todo]
         resp.title shouldBe testSaveTodo.title
         resp.description shouldBe testSaveTodo.description
@@ -30,8 +35,8 @@ class TodoRouterSaveSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
       Post("/todos", testSaveTodo.copy("")) ~> router.route ~> check {
         status shouldBe ApiError.emptyTitleField.statusCode
-        val resp = responseAs[String]
-        resp shouldBe ApiError.emptyTitleField.message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.emptyTitleField.data
       }
     }
   }

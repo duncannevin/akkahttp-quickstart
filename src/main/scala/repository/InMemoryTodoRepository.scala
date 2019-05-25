@@ -1,23 +1,13 @@
-import TodoRepository.TodoNotFound
+package repository
+
+import entities.{CreateTodo, Todo, UpdateTodo, TodoNotFound}
 
 import scala.concurrent.{ExecutionContext, Future}
-
-trait TodoRepository {
-  def all(): Future[Seq[Todo]]
-  def done(): Future[Seq[Todo]]
-  def pending(): Future[Seq[Todo]]
-  def save(createTodo: CreateTodo): Future[Todo]
-  def update(id: String, updateTodo: UpdateTodo): Future[Todo]
-}
-
-object TodoRepository {
-  final case class TodoNotFound(id: String) extends Exception(s"Todo with id $id not found.")
-}
 
 class InMemoryTodoRepository(initialTodos: Seq[Todo] = Seq(
   Todo("1", "Buy eggs", "Ran out of eggs, buy a dozen", done = false),
   Todo("2", "Buy milk", "The cat is thirsty", done = true)
-))(implicit ec: ExecutionContext) extends TodoRepository {
+))(implicit ec: ExecutionContext) extends Repository {
 
   private var todos: Vector[Todo] = initialTodos.toVector
 
@@ -50,3 +40,4 @@ class InMemoryTodoRepository(initialTodos: Seq[Todo] = Seq(
     todo.copy(title = nTitle, description = nDescription, done = nDone)
   }
 }
+

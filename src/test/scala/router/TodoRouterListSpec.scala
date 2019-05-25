@@ -1,6 +1,11 @@
+package router
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import entities.{ApiError, ErrorData, Todo}
 import org.scalatest.{Matchers, WordSpec}
+import repository.{InMemoryTodoRepository, TodoMocks}
+import routes.TodoRouter
 
 class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -48,8 +53,8 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
       Get("/todos") ~> router.route ~> check {
         status shouldBe StatusCodes.InternalServerError
-        val resp = responseAs[String]
-        resp shouldBe ApiError.generic.message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.generic.data
       }
     }
     "handle repository failure in the done route" in {
@@ -58,8 +63,8 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
       Get("/todos/done") ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode
-        val resp = responseAs[String]
-        resp shouldBe ApiError.generic.message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.generic.data
       }
     }
     "handle repository failure in the pending route" in {
@@ -68,8 +73,8 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
       Get("/todos/pending") ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode
-        val resp = responseAs[String]
-        resp shouldBe ApiError.generic.message
+        val resp = responseAs[ErrorData]
+        resp shouldBe ApiError.generic.data
       }
     }
   }
