@@ -1,6 +1,6 @@
 package repository
 
-import entities.{CreateTodo, Todo, UpdateTodo}
+import entities.{CreateTodo, Todo, TodoDeleted, UpdateTodo}
 
 import scala.concurrent.Future
 
@@ -10,4 +10,5 @@ trait Repository {
   def pending(): Future[Seq[Todo]]
   def save(createTodo: CreateTodo): Future[Todo]
   def update(id: String, updateTodo: UpdateTodo): Future[Todo]
+  def delete(id: String): Future[TodoDeleted]
 }

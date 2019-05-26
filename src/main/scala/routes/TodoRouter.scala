@@ -34,6 +34,11 @@ class TodoRouter(todoRepository: Repository) extends Router with Directives with
             } (ApiSuccess.ok) (success => complete(success.statusCode, success.data))
           }
         }
+      } ~ delete {
+        handle(todoRepository.delete(id)) {
+          case TodoNotFound(_) => ApiError.todoNotFound(id)
+          case _ => ApiError.generic
+        } (ApiSuccess.ok) (success => complete(success.statusCode, success.data))
       }
     } ~ path("done") {
       get {

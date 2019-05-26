@@ -16,7 +16,7 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
   private val todos = Seq(doneTodo, pendingTodo)
 
-  "todoRouter" should {
+  "A TodoRouter" should {
     "return all the todos" in {
       val repository = new InMemoryTodoRepository(todos)
       val router = new TodoRouter(repository)

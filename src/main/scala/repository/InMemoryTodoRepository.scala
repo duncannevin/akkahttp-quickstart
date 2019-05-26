@@ -1,6 +1,6 @@
 package repository
 
-import entities.{CreateTodo, Todo, UpdateTodo, TodoNotFound}
+import entities.{CreateTodo, Todo, TodoDeleted, TodoNotFound, UpdateTodo}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,6 +32,15 @@ class InMemoryTodoRepository(initialTodos: Seq[Todo] = Seq(
       case None => Future.failed(TodoNotFound(id))
     }
   }
+
+  override def delete(id: String): Future[TodoDeleted] =
+    todos.find(_.id == id) match {
+      case Some(foundTodo) =>
+        todos = todos.filterNot(_.id == foundTodo.id)
+        Future.successful(TodoDeleted(foundTodo.id))
+      case None => Future.failed(TodoNotFound(id))
+    }
+
 
   private def updateHelper(todo: Todo, updateTodo: UpdateTodo): Todo = {
     val nTitle = updateTodo.title.getOrElse(todo.title)

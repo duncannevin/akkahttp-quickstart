@@ -1,6 +1,6 @@
 package repository
 
-import entities.{CreateTodo, Todo, UpdateTodo}
+import entities.{CreateTodo, Todo, TodoDeleted, UpdateTodo}
 
 import scala.concurrent.Future
 
@@ -15,5 +15,7 @@ trait TodoMocks {
     override def save(createTodo: CreateTodo): Future[Todo] = Future.failed(new Exception("Mocked exception"))
 
     override def update(id: String, updateTodo: UpdateTodo): Future[Todo] = Future.failed(new Exception("Mocked exception"))
+
+    override def delete(id: String): Future[TodoDeleted] = Future.failed(new Exception("Mocked exception"))
   }
 }
