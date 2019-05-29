@@ -9,6 +9,7 @@ object ApiError {
 
   val generic: ApiError = new ApiError(StatusCodes.InternalServerError, ErrorData("Unknown error."))
   val emptyTitleField: ApiError = new ApiError(StatusCodes.BadRequest, ErrorData("The title field must not be empty."))
-  def todoNotFound(id: String): ApiError =
-    new ApiError(StatusCodes.NotFound, ErrorData(s"The todo with id $id could not be found."))
+  val invalidEmail: ApiError = new ApiError(StatusCodes.BadRequest, ErrorData("Email field is invalid."))
+  val notFound: ApiError = new ApiError(StatusCodes.NotFound, ErrorData(s"Not found."))
+  val conflict: ApiError = new ApiError(StatusCodes.Conflict, ErrorData(s"Resource already exists."))
 }

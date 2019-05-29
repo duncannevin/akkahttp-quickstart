@@ -10,13 +10,24 @@ trait TodoDirectives extends Directives {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
-  def handle[T](f: Future[T])(e: Throwable => ApiError)(success: T => ApiSuccess[T]): Directive1[ApiSuccess[T]] = onComplete(f) flatMap {
+  def handle[T](f: Future[T])(success: T => ApiSuccess[T]): Directive1[ApiSuccess[T]] = onComplete(f) flatMap {
     case Success(t) => provide(success(t))
-    case Failure(error) =>
-      val apiError = e(error)
-      complete(apiError.statusCode, apiError.data)
+    case Failure(_) =>
+      complete(ApiError.generic.statusCode, ApiError.generic.data)
   }
 
-  def handleWithGeneric[T](f: Future[T])(success: T => ApiSuccess[T]): Directive1[ApiSuccess[T]] =
-    handle[T](f)(_ => ApiError.generic)(success)
+  def handleOption[T](f: Future[Option[T]], `type`: String)(success: T => ApiSuccess[T]): Directive1[ApiSuccess[T]] = onComplete(f) flatMap {
+    case Success(tOpt) =>
+      tOpt match {
+        case Some(t) => provide(success(t))
+        case None =>
+          if (`type` == "find") {
+            complete(ApiError.notFound.statusCode, ApiError.notFound.data)
+          } else {
+            complete(ApiError.conflict.statusCode, ApiError.conflict.data)
+          }
+      }
+    case Failure(_) =>
+      complete(ApiError.generic.statusCode, ApiError.generic.data)
+  }
 }

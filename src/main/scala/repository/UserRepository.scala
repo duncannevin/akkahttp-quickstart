@@ -1,14 +1,16 @@
 package repository
 
 import db.{Db, UsersTable}
-import entities.{UpdateUser, User}
+import entities.User
+import logging.TodoLogger
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-class UserRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository[User] with Db with UsersTable {
+class UserRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository[User] with Db with UsersTable with TodoLogger {
   import config.profile.api._
 
   /**
@@ -25,9 +27,14 @@ class UserRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param user
     * @return
     */
-  override def save(user: User): Future[User] = db
-    .run(users returning users.map(_.id) += user)
-    .map(id => user.copy(id = id))
+  override def save(user: User): Future[Option[User]] = db
+    .run((users returning users.map(_.id) += user).asTry)
+    .map {
+      case Success(id) => Some(user.copy(id = id))
+      case Failure(e) =>
+        failedToSave(e.getMessage, s"user: user.email")
+        None
+    }
 
   /**
     * Find a user by id

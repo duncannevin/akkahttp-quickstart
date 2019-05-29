@@ -8,7 +8,7 @@ trait UsersTable { this: Db =>
   class Users(tag: Tag) extends Table[User](tag, "USERS") {
     // Columns
     def id = column[String]("USER_ID", O.PrimaryKey, O.AutoInc)
-    def email = column[String]("USER_EMAIL", O.Length(512))
+    def email = column[String]("USER_EMAIL", O.Length(512), O.Unique)
     def firstName = column[String]("FIRST_NAME", O.Length(512))
     def lastName = column[String]("LAST_NAME", O.Length(512))
     // Indexes

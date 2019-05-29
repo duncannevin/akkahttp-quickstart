@@ -18,6 +18,8 @@ object Todo {
     updateTodo.description,
     updateTodo.done
   )
+
+  val tupled = (Todo.apply(_: String, _: String, _: String, _: String, _: Boolean)).tupled
 }
 
 case class Todo(id: String, userId: String, title: String, description: String, done: Boolean)

@@ -1,18 +1,20 @@
 package repository
 
 import db.{Db, TodosTable}
-import entities.{Todo, UpdateTodo}
+import entities.{Todo, TodoNotFound}
+import logging.TodoLogger
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository[Todo] with Db with TodosTable {
+class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository[Todo] with Db with TodosTable with TodoLogger {
   import config.profile.api._
 
-  def init() = db.run(DBIO.seq(todos.schema.create))
-  def drop() = db.run(DBIO.seq(todos.schema.drop))
+  def init(): Future[Unit] = db.run(DBIO.seq(todos.schema.create))
+  def drop(): Future[Unit] = db.run(DBIO.seq(todos.schema.drop))
 
   /**
     * Inserting a record is easy. Since we are auto-incrementing the id field
@@ -20,9 +22,14 @@ class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param todo
     * @return
     */
-  override def save(todo: Todo): Future[Todo] = db
-    .run(todos returning todos.map(_.id) += todo)
-    .map(id => todo.copy(id = id))
+  override def save(todo: Todo): Future[Option[Todo]] = db
+    .run((todos returning todos.map(_.id) += todo).asTry)
+    .map {
+      case Success(id) => Some(todo.copy(id = id))
+      case Failure(e) =>
+        failedToSave(e.getMessage, s"todo: todo.title")
+        None
+    }
 
   /**
     * Find a todo by id

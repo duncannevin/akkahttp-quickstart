@@ -15,7 +15,7 @@ trait TodosTable extends UsersTable { this: Db =>
     def userId = column[String]("USER_ID")
     def userFK = foreignKey("USER_FK", userId, users)(_.id, ForeignKeyAction.Restrict, ForeignKeyAction.Cascade)
     // Select
-    def * = (id, userId, title, description, done) <> ((Todo.apply(_: String, _: String, _: String, _: String, _: Boolean)).tupled, Todo.unapply)
+    def * = (id, userId, title, description, done) <> (Todo.tupled, Todo.unapply)
   }
 
   val todos = TableQuery[Todos]
