@@ -1,14 +1,13 @@
 package repository
 
-import entities.{CreateTodo, Todo, TodoDeleted, UpdateTodo}
-
 import scala.concurrent.Future
 
-trait Repository {
-  def all(): Future[Seq[Todo]]
-  def done(): Future[Seq[Todo]]
-  def pending(): Future[Seq[Todo]]
-  def save(createTodo: CreateTodo): Future[Todo]
-  def update(id: String, updateTodo: UpdateTodo): Future[Todo]
-  def delete(id: String): Future[TodoDeleted]
+trait Repository[T] {
+  def all(id: String): Future[Seq[T]]
+  def done(id: String): Future[Seq[T]]
+  def pending(id: String): Future[Seq[T]]
+  def save(saveVal: T): Future[T]
+  def update(updateVal: T): Future[Boolean]
+  def delete(id: String): Future[Boolean]
+  def find(id: String): Future[Option[T]]
 }

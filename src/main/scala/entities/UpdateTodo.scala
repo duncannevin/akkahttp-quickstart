@@ -1,4 +1,3 @@
 package entities
 
-case class UpdateTodo(title: Option[String], description: Option[String], done: Option[Boolean])
-
+case class UpdateTodo(title: String, description: String, done: Boolean)
