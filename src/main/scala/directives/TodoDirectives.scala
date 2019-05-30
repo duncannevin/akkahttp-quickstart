@@ -12,8 +12,8 @@ trait TodoDirectives extends Directives {
 
   def handle[T](f: Future[T])(success: T => ApiSuccess[T]): Directive1[ApiSuccess[T]] = onComplete(f) flatMap {
     case Success(t) => provide(success(t))
-    case Failure(_) =>
-      complete(ApiError.generic.statusCode, ApiError.generic.data)
+    case Failure(e) =>
+      complete(ApiError.generic.statusCode, ApiError.generic.data.copy(msg = e.getMessage))
   }
 
   def handleOption[T](f: Future[Option[T]], `type`: String)(success: T => ApiSuccess[T]): Directive1[ApiSuccess[T]] = onComplete(f) flatMap {
@@ -27,7 +27,7 @@ trait TodoDirectives extends Directives {
             complete(ApiError.conflict.statusCode, ApiError.conflict.data)
           }
       }
-    case Failure(_) =>
-      complete(ApiError.generic.statusCode, ApiError.generic.data)
+    case Failure(e) =>
+      complete(ApiError.generic.statusCode, ApiError.generic.data.copy(msg = e.getMessage))
   }
 }

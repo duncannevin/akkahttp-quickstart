@@ -1,25 +1,23 @@
 package entities
 
-import java.util.UUID
-
 object Todo {
-  def apply(userId: String, createTodo: CreateTodo): Todo = new Todo(
-    UUID.randomUUID().toString,
+  def apply(userId: Int, createTodo: CreateTodo): Todo = new Todo(
+    None,
     userId,
     createTodo.title,
     createTodo.description,
     done = false
   )
 
-  def apply(userId: String, id: String, updateTodo: UpdateTodo): Todo = new Todo(
-    id,
+  def apply(userId: Int, id: Int, updateTodo: UpdateTodo): Todo = new Todo(
+    id = Some(id),
     userId,
     updateTodo.title,
     updateTodo.description,
     updateTodo.done
   )
 
-  val tupled = (Todo.apply(_: String, _: String, _: String, _: String, _: Boolean)).tupled
+  val tupled = (Todo.apply(_: Option[Int], _: Int, _: String, _: String, _: Boolean)).tupled
 }
 
-case class Todo(id: String, userId: String, title: String, description: String, done: Boolean)
+case class Todo(id: Option[Int], userId: Int, title: String, description: String, done: Boolean)

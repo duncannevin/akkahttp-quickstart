@@ -18,8 +18,10 @@ class UserRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * Slick has a capability to project it to a sequence of DDL statements
     * @return
     */
-  def init() = db.run(DBIO.seq(users.schema.create))
-  def drop() = db.run(DBIO.seq(users.schema.drop))
+  def init(): Future[Unit] = db.run(DBIO.seq(users.schema.create))
+  def drop(): Future[Unit] = db.run(DBIO.seq(users.schema.drop))
+
+  init()
 
   /**
     * Inserting a record is easy. Since we are auto-incrementing the id field
@@ -30,9 +32,9 @@ class UserRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
   override def save(user: User): Future[Option[User]] = db
     .run((users returning users.map(_.id) += user).asTry)
     .map {
-      case Success(id) => Some(user.copy(id = id))
+      case Success(id) => Some(user.copy(id = Some(id)))
       case Failure(e) =>
-        failedToSave(e.getMessage, s"user: user.email")
+        failedToSave(e.getMessage, s"user: ${user.email}")
         None
     }
 
@@ -41,7 +43,7 @@ class UserRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param id
     * @return
     */
-  override def find(id: String): Future[Option[User]] = db.run {
+  override def find(id: Int): Future[Option[User]] = db.run {
     (for {
       user <- users if user.id === id
     } yield user).result.headOption
@@ -65,12 +67,12 @@ class UserRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param id
     * @return
     */
-  override def delete(id: String): Future[Boolean] =
+  override def delete(id: Int): Future[Boolean] =
     db.run(users.filter(_.id === id).delete).map(_ > 0)
 
-  override def all(id: String): Future[Seq[User]] = Future.failed(throw new Exception("not used"))
+  override def all(id: Int): Future[Seq[User]] = Future.failed(throw new Exception("not used"))
 
-  override def done(id: String): Future[Seq[User]] = Future.failed(throw new Exception("not used"))
+  override def done(id: Int): Future[Seq[User]] = Future.failed(throw new Exception("not used"))
 
-  override def pending(id: String): Future[Seq[User]] = Future.failed(throw new Exception("not used"))
+  override def pending(id: Int): Future[Seq[User]] = Future.failed(throw new Exception("not used"))
 }

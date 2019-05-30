@@ -1,7 +1,7 @@
 package repository
 
 import db.{Db, TodosTable}
-import entities.{Todo, TodoNotFound}
+import entities.Todo
 import logging.TodoLogger
 import slick.basic.DatabaseConfig
 import slick.jdbc.JdbcProfile
@@ -13,8 +13,15 @@ import scala.util.{Failure, Success}
 class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository[Todo] with Db with TodosTable with TodoLogger {
   import config.profile.api._
 
+  /**
+    * Once the table mappings (or simplify database schema) are defined,
+    * Slick has a capability to project it to a sequence of DDL statements
+    * @return
+    */
   def init(): Future[Unit] = db.run(DBIO.seq(todos.schema.create))
   def drop(): Future[Unit] = db.run(DBIO.seq(todos.schema.drop))
+
+  init()
 
   /**
     * Inserting a record is easy. Since we are auto-incrementing the id field
@@ -25,9 +32,9 @@ class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
   override def save(todo: Todo): Future[Option[Todo]] = db
     .run((todos returning todos.map(_.id) += todo).asTry)
     .map {
-      case Success(id) => Some(todo.copy(id = id))
+      case Success(id) => Some(todo.copy(id = Some(id)))
       case Failure(e) =>
-        failedToSave(e.getMessage, s"todo: todo.title")
+        failedToSave(e.getMessage, s"todo: ${todo.title}")
         None
     }
 
@@ -36,7 +43,7 @@ class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param id
     * @return
     */
-  override def find(id: String): Future[Option[Todo]] = db.run {
+  override def find(id: Int): Future[Option[Todo]] = db.run {
     (for {
       todo <- todos if todo.id === id
     } yield todo).result.headOption
@@ -47,7 +54,7 @@ class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param userId
     * @return
     */
-  override def all(userId: String): Future[Seq[Todo]] =
+  override def all(userId: Int): Future[Seq[Todo]] =
     db.run(todos.filter(_.userId === userId).result)
 
   /**
@@ -55,16 +62,16 @@ class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param userId
     * @return
     */
-  override def pending(userId: String): Future[Seq[Todo]] =
-    db.run(todos.filter(todo => todo.id === userId && !todo.done).result)
+  override def pending(userId: Int): Future[Seq[Todo]] =
+    db.run(todos.filter(todo => todo.userId === userId && !todo.done).result)
 
   /**
     * returns all completed todos
     * @param userId
     * @return
     */
-  override def done(userId: String): Future[Seq[Todo]] =
-    db.run(todos.filter(todo => todo.id === userId && todo.done).result)
+  override def done(userId: Int): Future[Seq[Todo]] =
+    db.run(todos.filter(todo => todo.userId === userId && todo.done).result)
 
   /**
     * updates a todos title, description and done
@@ -84,6 +91,6 @@ class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * @param id
     * @return
     */
-  override def delete(id: String): Future[Boolean] =
+  override def delete(id: Int): Future[Boolean] =
     db.run(todos.filter(_.id === id).delete).map(_ > 0)
 }

@@ -7,7 +7,7 @@ object CreateUserValidator extends Validator[CreateUser] {
     """(\w+)@([\w\.]+)""".r.unapplySeq(email).isDefined
 
   override def validate(createUser: CreateUser): Option[ApiError] = {
-    if (isValidEmail(createUser.email)) {
+    if (!isValidEmail(createUser.email)) {
       Some(ApiError.invalidEmail)
     } else None
   }
