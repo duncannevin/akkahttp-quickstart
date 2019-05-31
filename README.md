@@ -151,19 +151,17 @@ request body
 true
 ```
 
-**GET** /todos?userId=[userId]
+**GET** /todos?userId=[userId]&id=[id]
 
 200
 ```json
-[
-    {
-        "id": 3,
-        "userId": 4,
-        "title": "Go to the MOON",
-        "description": "get tomatoes",
-        "done": true
-    }
-]
+{
+    "id": 3,
+    "userId": 4,
+    "title": "Go to the MOON",
+    "description": "get tomatoes",
+    "done": true
+}
 ```
 
 **GET** /todos/pending?userId=[userId]
