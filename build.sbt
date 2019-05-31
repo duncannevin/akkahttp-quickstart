@@ -15,6 +15,8 @@ val slickVersion = "3.3.0"
 
 resolvers += Resolver.bintrayRepo("hseeberger", "maven")
 
+parallelExecution in Test := false
+
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
@@ -39,5 +41,5 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-nop" % "1.6.4",
   "com.typesafe.slick" %% "slick-hikaricp" % slickVersion,
   "mysql" % "mysql-connector-java" % "5.1.34",
-  "com.h2database" % "h2" % "1.4.199"
+  "com.h2database" % "h2" % "1.4.199" % Test
 )

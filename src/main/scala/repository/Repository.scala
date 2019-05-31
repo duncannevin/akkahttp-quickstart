@@ -3,6 +3,8 @@ package repository
 import scala.concurrent.Future
 
 trait Repository[T] {
+  def init(): Future[Unit]
+  def drop(): Future[Unit]
   def all(id: Int): Future[Seq[T]]
   def done(id: Int): Future[Seq[T]]
   def pending(id: Int): Future[Seq[T]]

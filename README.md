@@ -1,96 +1,172 @@
 # Akka Http QuickStart
 
 Fully featured, easy to understand akka http seed project. This a perfect seed for
-constructing a micro service.
+constructing a micro service. This seed has a fully functional `Slick` instance using MySql and H2 for data
+persistence.
 
-##### Dependencies
+#### Dependencies
 - [Java -v0.8](https://java.com/en/download/) 
 - [Scala -v 2.12.2](https://www.scala-lang.org/download/)
+- [Mysql](https://www.mysql.com/)
+- [H2](https://www.h2database.com/html/main.html)
+
+#### Database
+
+Database is powered by `Slick` driver running `MySql` for production and `H2` for testing.
+
+If you would like to change either of these that is fine you will just need to change the drivers in `application.conf`
+
+```
+mysql {
+    profile = "slick.jdbc.MySQLProfile$"
+    db {
+       url = "jdbc:mysql://localhost:3306/todo?user=root"
+       driver = com.mysql.jdbc.Driver
+       maxThreads = 5
+    }
+}
+
+h2 {
+  profile = "slick.jdbc.H2Profile$"
+  db {
+    url = "jdbc:h2:mem:todo;DB_CLOSE_DELAY=-1"
+      	driver=org.h2.Driver
+      	connectionPool = disabled
+  }
+}
+```
+ 
+ Then update the pointers in `/main/scala/db/DbConfiguration.scala` and `/test/scala/db/TestDbConfiguration.scala`
+
+#### Testing
+
+Since this is a simple CRUD api and nothing besides the routes are using the repositories I am considering
+testing just the routes sufficient as unit tests. Aside from the routes, the custom directives are tested as
+well.
+
+```
+sbt test
+```
+
+#### Run
+
+```
+sbt run 
+```
 
 #### Using the Api
 
-##### POST /todos
+---
+
+**POST** /users
 
 request body
 ```json
 {
-	"title": "go to the park",
-	"description": "it is important to smell the roses."
+	"email": "tester@chester.com",
+	"firstName": "tester",
+	"lastName": "chester"
 }
 ```
 
 201 
 ```json
 {
-    "id": "a2ab38f3-84c9-4ee0-9a54-f44d2eeea87d",
-    "title": "go to the park",
-    "description": "it is important to smell the roses.",
+    "id": 4,
+    "email": "tester@chester.com",
+    "firstName": "tester",
+    "lastName": "chester"
+}
+```
+
+**PUT** /users/update?userId=[userId]
+
+request body
+
+```json
+{
+	
+	"email": "tester@chester.com",
+	"firstName": "tester",
+	"lastName": "chesterDUDE"
+}
+```
+
+200
+```json
+true
+```
+
+---
+
+**POST** /todos?userId=[userId]
+
+request body
+```json
+{
+  	"title": "Go to the store",
+  	"description": "get tomatoes"
+}
+```
+
+201
+```json
+{
+    "id": 3,
+    "userId": 4,
+    "title": "Go to the store",
+    "description": "get tomatoes",
     "done": false
 }
 ```
 
-##### GET /todos
+**GET** /todos?userId=[userId]
 
 200
 ```json
 [
     {
-        "id": "1",
-        "title": "Buy eggs",
-        "description": "Ran out of eggs, buy a dozen",
+        "id": 3,
+        "userId": 4,
+        "title": "Go to the store",
+        "description": "get tomatoes",
         "done": false
-    },
-    {
-        "id": "2",
-        "title": "Buy milk",
-        "description": "The cat is thirsty",
-        "done": true
-    },
-    {
-        "id": "036165de-5013-4846-ba85-cc5294fa1870",
-        "title": "go to the park",
-        "description": "it is important to smell the roses.",
-        "done": true
     }
 ]
 ```
 
-##### PUT /todos/[todo id]
+**PUT** /todos/update?userId=[userId]&id=[todo id]
 
-request body **all fields are optional**
+request body
 ```json
 {
-	"title": "go to the park",
-	"description": "hide and seek game",
-	"done": true
+  "title": "Go to the MOON",
+  "description": "get tomatoes",
+  "done": true
 }
 ```
 
 200
 ```json
-{
-    "id": "2",
-    "title": "go to the park",
-    "description": "hide and seek game",
-    "done": true
-}
+true
 ```
 
-##### GET /todos/pending
+**GET** /todos?userId=[userId]
 
 200
 ```json
 [
     {
-        "id": "1",
-        "title": "Buy eggs",
-        "description": "Ran out of eggs, buy a dozen",
-        "done": false
+        "id": 3,
+        "userId": 4,
+        "title": "Go to the MOON",
+        "description": "get tomatoes",
+        "done": true
     }
 ]
 ```
 
-##### GET /todos/complete
+**GET** /todos/pending?userId=[userId]
 
 200
 ```json
@@ -99,13 +175,34 @@ request body **all fields are optional**
         "id": "2",
         "title": "go to the park",
         "description": "hide and seek game",
-        "done": true
+        "done": false
     },
     {
         "id": "036165de-5013-4846-ba85-cc5294fa1870",
         "title": "go to the park",
         "description": "it is important to smell the roses.",
+        "done": false
+    }
+]
+```
+
+**GET** /todos/complete?userId=[userId]
+
+```json
+[
+    {
+        "id": 3,
+        "userId": 4,
+        "title": "Go to the MOON",
+        "description": "get tomatoes",
         "done": true
     }
 ]
+```
+
+**DELETE** /todos/delete?userId=[userId]&id=[id]
+
+200
+```json
+true
 ```

@@ -1,3 +1,3 @@
 package entities
 
-case class UpdateUser(firstName: Option[String], lastName: Option[String], email: Option[String])
+case class UpdateUser(firstName: String, lastName: String, email: String)

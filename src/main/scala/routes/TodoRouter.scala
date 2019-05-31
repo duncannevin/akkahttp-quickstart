@@ -25,7 +25,7 @@ class TodoRouter(todoRepository: Repository[Todo]) extends Router with Directive
           }
         }
       } ~ parameter('id.as[Int]) { id =>
-        path ("query") {
+        path("query") {
           get {
             handleOption(todoRepository.find(id), `type` = "find")(ApiSuccess.ok)(success => complete(success.statusCode, success.data))
           }
@@ -42,7 +42,7 @@ class TodoRouter(todoRepository: Repository[Todo]) extends Router with Directive
             handle(todoRepository.delete(id))(ApiSuccess.ok)(success => complete(success.statusCode, success.data))
           }
         }
-      } ~ path("done") {
+      } ~ path("complete") {
         get {
           handle(todoRepository.done(userId))(ApiSuccess.ok)(success => complete(success.statusCode, success.data))
         }

@@ -8,6 +8,13 @@ object User {
     lastName = createUser.lastName
   )
 
+  def apply(id: Int, updateUser: UpdateUser): User = new User(
+    Some(id),
+    email = updateUser.email,
+    firstName = updateUser.firstName,
+    lastName = updateUser.lastName
+  )
+
   val tupled = (User.apply(_: Option[Int], _: String, _: String, _: String)).tupled
 }
 

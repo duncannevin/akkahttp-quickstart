@@ -2,8 +2,6 @@ package db
 
 import entities.Todo
 
-import scala.concurrent.Future
-
 trait TodosTable extends UsersTable { this: Db =>
   import config.profile.api._
 

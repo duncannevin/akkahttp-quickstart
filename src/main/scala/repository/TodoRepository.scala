@@ -18,10 +18,19 @@ class TodoRepository(val config: DatabaseConfig[JdbcProfile]) extends Repository
     * Slick has a capability to project it to a sequence of DDL statements
     * @return
     */
-  def init(): Future[Unit] = db.run(DBIO.seq(todos.schema.create))
-  def drop(): Future[Unit] = db.run(DBIO.seq(todos.schema.drop))
+  override def init(): Future[Unit] = {
+    db.run(DBIO.seq(todos.schema.create).asTry).map {
+      case Success(_) => createdTable(users.baseTableRow.tableName)
+      case Failure(e) => failedToCreateTable(users.baseTableRow.tableName, e.getMessage)
+    }
+  }
 
-  init()
+  override def drop(): Future[Unit] = {
+    db.run(DBIO.seq(todos.schema.drop).asTry).map {
+      case Success(_) => droppedTable(users.baseTableRow.tableName)
+      case Failure(e) => failedToDropTable(users.baseTableRow.tableName, e.getMessage)
+    }
+  }
 
   /**
     * Inserting a record is easy. Since we are auto-incrementing the id field

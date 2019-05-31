@@ -23,8 +23,10 @@ trait TodoDirectives extends Directives {
         case None =>
           if (`type` == "find") {
             complete(ApiError.notFound.statusCode, ApiError.notFound.data)
-          } else {
+          } else if (`type` == "save") {
             complete(ApiError.conflict.statusCode, ApiError.conflict.data)
+          } else {
+            complete(ApiError.generic.statusCode, ApiError.generic.data)
           }
       }
     case Failure(e) =>

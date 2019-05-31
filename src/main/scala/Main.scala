@@ -24,7 +24,9 @@ object Main extends App with TodoLogger with DbConfiguration {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   val todoRepository: Repository[Todo] = new TodoRepository(db)
+  todoRepository.init()
   val userRepository: Repository[User] = new UserRepository(db)
+  todoRepository.init()
   val todoRouter: Router = new TodoRouter(todoRepository)
   val userRouter: Router = new UserRouter(userRepository)
 
